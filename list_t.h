@@ -890,7 +890,7 @@ int get_numeric_max(List list, int(*expression)(T));
 bool get_max(List list, T* result, comparation(*expression)(T, T));
 
 /* ---------------------------------------------------------------------
-*  OrderBy
+*  InPlaceOrderBy
 *  ---------------------------------------------------------------------
 *  Description:
 *    Returns a new List with all the elements from the input List,
@@ -900,10 +900,10 @@ bool get_max(List list, T* result, comparation(*expression)(T, T));
 *  Parameters:
 *    list ---> The input List
 *    expression ---> Comparator lambda expression */
-List order_by(List list, comparation(*expression)(T, T));
+List in_place_order_by(List list, comparation(*expression)(T, T));
 
 /* ---------------------------------------------------------------------
-*  OrderByDescending
+*  InPlaceOrderByDescending
 *  ---------------------------------------------------------------------
 *  Description:
 *    Returns a new List with all the elements from the input List,
@@ -913,7 +913,9 @@ List order_by(List list, comparation(*expression)(T, T));
 *  Parameters:
 *    list ---> The input List
 *    expression ---> Comparator lambda expression */
-List order_by_descending(List list, comparation(*expression)(T, T));
+List in_place_order_by_descending(List list, comparation(*expression)(T, T));
+
+List order_by(List list, comparation(*expression)(T, T));
 
 /* ---------------------------------------------------------------------
 *  Distinct

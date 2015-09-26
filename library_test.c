@@ -499,13 +499,13 @@ void LINQ_test()
 
 	// OrderBy
 	printf("\n\n>> Order by ascending:\n");
-	temp = order_by(test, expression);
+	temp = in_place_order_by(test, expression);
 	PRINT_TEMP;
 	DISPOSE_TEMP;
 
 	// OrderByDescending
 	printf("\n\n>> Order by descending:\n");
-	temp = order_by_descending(test, expression);
+	temp = in_place_order_by_descending(test, expression);
 	PRINT_TEMP;
 	DISPOSE_TEMP;
 
