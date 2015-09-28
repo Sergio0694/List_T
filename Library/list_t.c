@@ -12,8 +12,9 @@
 #include "list_t.h"
 #include "Introsort\introsort.h"
 
-/* ===== list_t internal types ===== */
+/* ================== list_t internal types ================== */
 
+// Single list_t node
 struct listElem
 {
 	struct listElem* previous;
@@ -21,9 +22,19 @@ struct listElem
 	struct listElem* next;
 };
 
+// Type declarations for the list_t node and a node pointer
 typedef struct listElem listNode;
 typedef listNode* nodePointer;
 
+/* ---------------------------------------------------------------------
+*  listBase
+*  ---------------------------------------------------------------------
+*  Description:
+*    The head of a list_t: it stores a pointer to the first node, one
+*    to the last node (so that functions like get_first(), get_last() and
+*    add() have a O(1) cost), the current length of the list (this way
+*    getting the size has a O(1) cost as well) and a sync variable used
+*    to check if a list iterator is valid for the current list. */
 struct listBase
 {
 	nodePointer head;
@@ -32,6 +43,14 @@ struct listBase
 	unsigned int sync;
 };
 
+/* ---------------------------------------------------------------------
+*  listIterator
+*  ---------------------------------------------------------------------
+*  Description:
+*    An iterator for a list_t list. It stores a pointer to the target node,
+*    one to the target list, the current position inside the list, a sync
+*    variable that checks if the iterator is still valid and a started
+*    variable used to calculate the next node to return. */
 struct listIterator
 {
 	nodePointer pointer;
@@ -41,6 +60,7 @@ struct listIterator
 	bool_t started;
 };
 
+// Type declaration for the list_t iterator
 typedef struct listIterator iteratorInstance;
 
 /* ============================================================================
@@ -50,12 +70,12 @@ typedef struct listIterator iteratorInstance;
 // Create
 list_t create()
 {
-	list_t outlist_t = (list_t)malloc(sizeof(struct listBase));
-	outlist_t->head = NULL;
-	outlist_t->tail = NULL;
-	outlist_t->length = 0;
-	outlist_t->sync = 0;
-	return outlist_t;
+	list_t outList = (list_t)malloc(sizeof(struct listBase));
+	outList->head = NULL;
+	outList->tail = NULL;
+	outList->length = 0;
+	outList->sync = 0;
+	return outList;
 }
 
 #define GET_ITERATOR(target) nodePointer iterator = target
@@ -141,15 +161,15 @@ void destroy_sequence(bool_t* result, list_t** pending)
 list_t copy(const list_t source)
 {
 	if (source == NULL) return NULL;
-	list_t outlist_t = create();
-	if (source->length == 0) return outlist_t;
+	list_t outList = create();
+	if (source->length == 0) return outList;
 	GET_ITERATOR(source->head);
 	while (iterator != NULL)
 	{
-		add(iterator->info, outlist_t);
+		add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Create random
@@ -157,27 +177,27 @@ list_t create_random(int length, int min, int max)
 {
 	if (min >= max) return NULL;
 	if (length == 0) return create();
-	list_t outlist_t = create();
+	list_t outList = create();
 	srand((unsigned)time(NULL));
 	while (length != 0)
 	{
-		add((T)((rand() % (max - min)) + min), outlist_t);
+		add((T)((rand() % (max - min)) + min), outList);
 		length--;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // CreateFrom
 list_t create_from(T* array, int size)
 {
 	if (array == NULL || size <= 0) return NULL;
-	list_t outlist_t = create();
+	list_t outList = create();
 	int i;
 	for (i = 0; i < size; i++)
 	{
-		add(array[i], outlist_t);
+		add(array[i], outList);
 	}
-	return outlist_t;
+	return outList;
 }
 
 // ToArray
@@ -848,32 +868,32 @@ int last_index_where(list_t list, bool_t(*expression)(T))
 list_t where(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		if (expression(iterator->info)) add(iterator->info, outlist_t);
+		if (expression(iterator->info)) add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // TakeWhile
 list_t take_while(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
 		if (expression(iterator->info))
 		{
-			add(iterator->info, outlist_t);
+			add(iterator->info, outList);
 			MOVE_NEXT;
 		}
 		else break;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // TakeRange
@@ -882,7 +902,7 @@ list_t take_range(list_t list, int start, int end)
 	NULL_IF_EMPTY(list);
 	if (start < 0 || end < 0 || start >= list->length
 		|| end >= list->length || start >= end) return NULL;
-	list_t outlist_t = create();	
+	list_t outList = create();	
 	bool_t fromHead = start <= list->length / 2;
 	nodePointer iterator;
 	if (fromHead)
@@ -908,11 +928,11 @@ list_t take_range(list_t list, int start, int end)
 	int elements = end + 1 - start;
 	while (elements > 0)
 	{
-		add(iterator->info, outlist_t);
+		add(iterator->info, outList);
 		iterator = iterator->next;
 		elements--;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Concat
@@ -920,15 +940,15 @@ list_t concat(list_t list1, list_t list2)
 {
 	if (list1 == NULL || list2 == NULL) return NULL;
 	if (list1->length == 0) return copy(list2);
-	list_t outlist_t = copy(list1);
-	if (list2->length == 0) return outlist_t;
+	list_t outList = copy(list1);
+	if (list2->length == 0) return outList;
 	GET_ITERATOR(list2->head);
 	while (iterator != NULL)
 	{
-		add(iterator->info, outlist_t);
+		add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 #define GET_COUPLE_ITERATORS                                   \
@@ -939,14 +959,14 @@ list_t zip(list_t list1, list_t list2, T(*expression)(T, T))
 {
 	if (CHECK_EMPTY(list1) || CHECK_EMPTY(list2)) return NULL;
 	GET_COUPLE_ITERATORS;
-	list_t outlist_t = create();
+	list_t outList = create();
 	while (iterator1 != NULL && iterator2 != NULL)
 	{
-		add(expression(iterator1->info, iterator2->info), outlist_t);
+		add(expression(iterator1->info, iterator2->info), outList);
 		iterator1 = iterator1->next;
 		iterator2 = iterator2->next;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Any
@@ -980,22 +1000,22 @@ list_t skip(list_t list, int count)
 {
 	NULL_IF_EMPTY(list);
 	if (count >= list->length) return NULL;
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
 		if (count) count--;
-		else add(iterator->info, outlist_t);
+		else add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // SkipWhile
 list_t skip_while(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	bool_t triggered = FALSE;
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
@@ -1009,10 +1029,10 @@ list_t skip_while(list_t list, bool_t(*expression)(T))
 			}
 			else triggered = TRUE;
 		}
-		add(iterator->info, outlist_t);
+		add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // ForEach
@@ -1062,16 +1082,16 @@ list_t join(list_t list1, list_t list2, bool_t(*expression)(T, T))
 {
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0) return copy(list2);
-	list_t outlist_t = copy(list1);
-	if (list2->length == 0) return outlist_t;
+	list_t outList = copy(list1);
+	if (list2->length == 0) return outList;
 	GET_ITERATOR(list2->head);
 	while (iterator != NULL)
 	{
 		LIST_CONTAINS(list1);
-		if (!found) add(iterator->info, outlist_t);
+		if (!found) add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // JoinWhere
@@ -1081,11 +1101,11 @@ list_t join_where(list_t list1, list_t list2, bool_t(*condition)(T), bool_t(*exp
 	if (list1->length == 0 && list2->length == 0) return create();
 	if (list1->length == 0) return where(list2, condition);
 	if (list2->length == 0) return where(list1, condition);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_ITERATOR(list1->head);
 	while (iterator != NULL)
 	{
-		if (condition(iterator->info)) add(iterator->info, outlist_t);
+		if (condition(iterator->info)) add(iterator->info, outList);
 		MOVE_NEXT;
 	}
 	iterator = list2->head;
@@ -1093,12 +1113,12 @@ list_t join_where(list_t list1, list_t list2, bool_t(*condition)(T), bool_t(*exp
 	{
 		if (condition(iterator->info)) 
 		{
-			LIST_CONTAINS(outlist_t);
-			if (!found) add(iterator->info, outlist_t);
+			LIST_CONTAINS(outList);
+			if (!found) add(iterator->info, outList);
 		}
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Intersect
@@ -1106,15 +1126,15 @@ list_t intersect(list_t list1, list_t list2, bool_t(*expression)(T, T))
 {
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0 || list2->length == 0) return create();
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_ITERATOR(list1->head);
 	while (iterator != NULL)
 	{
 		LIST_CONTAINS(list2);
-		if (found) add(iterator->info, outlist_t);
+		if (found) add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Except
@@ -1123,29 +1143,29 @@ list_t except(list_t list1, list_t list2, bool_t(*expression)(T, T))
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0) return create();
 	if (list2->length == 0) return copy(list1);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_ITERATOR(list1->head);
 	while (iterator != NULL)
 	{
 		LIST_CONTAINS(list2);
-		if (!found) add(iterator->info, outlist_t);
+		if (!found) add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Reverse
 list_t reverse(list_t list)
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_TAIL_ITERATOR;
 	while (iterator != NULL)
 	{
-		add(iterator->info, outlist_t);
+		add(iterator->info, outList);
 		MOVE_BACK;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // ReverseRange
@@ -1154,14 +1174,14 @@ list_t reverse_range(list_t list, int start, int end)
 	NULL_IF_EMPTY(list);
 	if (start < 0 || end < 0 || start >= list->length
 		|| end >= list->length || start >= end) return NULL;
-	list_t outlist_t = copy(list);
+	list_t outList = copy(list);
 	while (start <= end)
 	{
-		swap(outlist_t, start, end);
+		swap(outList, start, end);
 		start++;
 		end--;
 	}
-	return outlist_t;
+	return outList;
 }
 
 #define GET_LIST_SUM                         \
@@ -1255,10 +1275,10 @@ bool_t get_max(list_t list, T* result, comparation(*expression)(T, T))
 // OrderHelper
 static inline list_t orderHelper(list_t list, comparation(*expression)(T, T), bool_t reverse)
 {
-	list_t outlist_t = copy(list);
-	if (list->length == 1) return outlist_t;
+	list_t outList = copy(list);
+	if (list->length == 1) return outList;
 	bool_t sorted = FALSE;
-	GET_ITERATOR(outlist_t->head);
+	GET_ITERATOR(outList->head);
 	while (TRUE)
 	{
 		comparation result = expression(iterator->info, iterator->next->info);
@@ -1276,13 +1296,13 @@ static inline list_t orderHelper(list_t list, comparation(*expression)(T, T), bo
 		bool_t loopEnd = iterator->next->next == NULL ? TRUE : FALSE;
 		if (loopEnd && sorted)
 		{
-			iterator = outlist_t->head;
+			iterator = outList->head;
 			sorted = FALSE;
 		}
 		else if (loopEnd) break;
 		else MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // InPlaceOrderBy
@@ -1337,11 +1357,11 @@ list_t order_by_descending(list_t list, comparation(*expression)(T, T))
 /* ============== Other LINQ functions ============== */
 
 #define GET_DISTINCT_LIST                                       \
-list_t outlist_t = create();                                    \
+list_t outList = create();                                    \
 GET_HEAD_ITERATOR;                                              \
 while (iterator != NULL)                                        \
 {                                                               \
-	nodePointer testIterator = outlist_t->head;                 \
+	nodePointer testIterator = outList->head;                 \
 	bool_t found = FALSE;                                       \
 	while (testIterator != NULL)                                \
 	{                                                           \
@@ -1352,7 +1372,7 @@ while (iterator != NULL)                                        \
 		}                                                       \
 		testIterator = testIterator->next;                      \
 	}                                                           \
-	if (!found) add(iterator->info, outlist_t);                 \
+	if (!found) add(iterator->info, outList);                 \
 	MOVE_NEXT;                                                  \
 }
 
@@ -1361,7 +1381,7 @@ list_t distinct(list_t list, bool_t(*expression)(T, T))
 {
 	NULL_IF_EMPTY(list);
 	GET_DISTINCT_LIST;
-	return outlist_t;
+	return outList;
 }
 
 // CountDistinct
@@ -1370,7 +1390,7 @@ int count_distinct(list_t list, bool_t(*expression)(T, T))
 	if (list == NULL) return -1;
 	if (list->length == 0) return 0;
 	GET_DISTINCT_LIST;
-	return outlist_t->length;
+	return outList->length;
 }
 
 // Single
@@ -1396,43 +1416,43 @@ bool_t single(list_t list, T* result, bool_t(*expression)(T))
 list_t remove_where(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		if (!expression(iterator->info)) add(iterator->info, outlist_t);
+		if (!expression(iterator->info)) add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // ReplaceWhere
 list_t replace_where(list_t list, const T replacement, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		if (expression(iterator->info)) add(replacement, outlist_t);
-		else add(iterator->info, outlist_t);
+		if (expression(iterator->info)) add(replacement, outList);
+		else add(iterator->info, outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // Derive
 list_t derive(list_t list, T(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		add(expression(iterator->info), outlist_t);
+		add(expression(iterator->info), outList);
 		MOVE_NEXT;
 	}
-	return outlist_t;
+	return outList;
 }
 
 // SequenceEquals
@@ -1458,15 +1478,15 @@ list_t trim(list_t list, int length)
 {
 	NULL_IF_EMPTY(list);
 	if (list->length <= length) return copy(list);
-	list_t outlist_t = create();
+	list_t outList = create();
 	GET_HEAD_ITERATOR;
 	int position = 0;
 	while (position < length)
 	{
-		add(iterator->info, outlist_t);
+		add(iterator->info, outList);
 		MOVE_NEXT_W_INDEX(position);
 	}
-	return outlist_t;
+	return outList;
 }
 
 /* ============================================================================
