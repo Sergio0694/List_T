@@ -10,6 +10,7 @@
 #include <limits.h>
 #include <time.h>
 #include "list_t.h"
+#include "Introsort\introsort.h"
 
 /* ===== List internal types ===== */
 
@@ -1298,135 +1299,15 @@ List in_place_order_by_descending(List list, comparation(*expression)(T, T))
 	return orderHelper(list, expression, TRUE);
 }
 
-/* ============== Introsort ============== */
-
-static inline int base2_log(int n)
-{
-	int log = 0;
-	while (n >>= 1) log++;
-	return log;
-}
-
-static inline void swap_by_pointers(int* n1, int* n2)
-{
-	int temp = *n1;
-	*n1 = *n2;
-	*n2 = temp;
-}
-
-// HeapSort
-
-static void sift_down(T* vector, int start, int end, comparation(*expression)(T, T))
-{
-	int root = start, temp;
-	while ((temp = (root << 1) + 1) <= end)
-	{
-		int child = temp;
-		int swap = root;
-		if (expression(vector[swap], vector[child]) == LOWER) swap = child;
-		if ((child + 1 <= end) && (expression(vector[swap], vector[child + 1])) == LOWER) swap = child + 1;
-		if (swap == root) return;
-		swap_by_pointers(vector + root, vector + swap);
-		root = swap;
-	}
-}
-
-static void heapify(T* vector, int n, comparation(*expression)(T, T))
-{
-	int start = (n - 2) / 2;
-	while (start >= 0)
-	{
-		sift_down(vector, start, n - 1, expression);
-		start--;
-	}
-}
-
-static void heapsort(T* vector, int n, comparation(*expression)(T, T))
-{
-	heapify(vector, n, expression);
-	int end = n - 1;
-	while (end > 0)
-	{
-		swap_by_pointers(vector + end, vector);
-		end--;
-		sift_down(vector, 0, end, expression);
-	}
-}
-
-// Main sorting algorithm
-
-static void insertion_sort(T* vector, int start, int end, comparation(*expression)(T, T))
-{
-	int x;
-	for (x = start + 1; x < end; x++)
-	{
-		T val = vector[x];
-		int j = x - 1;
-		while (j >= 0 && expression(val, vector[j]) == LOWER)
-		{
-			vector[j + 1] = vector[j];
-			j--;
-		}
-		vector[j + 1] = val;
-	}
-}
-
-static int partition(T* vector, int leftIndex, int rightIndex, comparation(*expression)(T, T))
-{
-	int left = leftIndex;
-	int right = rightIndex;
-	T pivot = vector[leftIndex];
-	while (left < right)
-	{
-		if (expression(vector[left], pivot) == LOWER)
-		{
-			left++;
-			continue;
-		}
-		if (expression(vector[right], pivot) == GREATER)
-		{
-			right--;
-			continue;
-		}
-		T tmp = vector[left];
-		vector[left] = vector[right];
-		vector[right] = tmp;
-		left++;
-	}
-	return left;
-}
-
-static void introsort(T* vector, int len, int start, int end, comparation(*expression)(T, T), int maxdepth)
-{
-	if (maxdepth == 0)
-	{
-		heapsort(vector, len, expression);
-	}
-	else if (start < end)
-	{
-		// This is where we switch to Insertion Sort
-		if (end - start < 9)
-		{
-			insertion_sort(vector, start, end + 1, expression);
-		}
-		else
-		{
-			int part = partition(vector, start, end, expression);
-			introsort(vector, len, start, part - 1, expression, maxdepth - 1);
-			introsort(vector, len, part + 1, end, expression, maxdepth - 1);
-		}
-	}
-}
-
-#define MIN_STACK_DEPTH 5
-
+// OrderBy
 List order_by(List list, comparation(*expression)(T, T))
 {
 	int len;
 	T* temp_vector = to_array(list, &len);
-	int maxdepth = base2_log(len);
-	introsort(temp_vector, len, 0, len - 1, expression, maxdepth >= MIN_STACK_DEPTH ? maxdepth : -1);
-	return create_from(temp_vector, len);
+	introsort(temp_vector, len, expression);
+	list = create_from(temp_vector, len);
+	free(temp_vector);
+	return list;
 }
 
 /* ============== Other LINQ functions ============== */

@@ -14,13 +14,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "list_t.h"
+#include <time.h>
+#include "Library\list_t.h"
 
 void getch();
 void generic_functions_test();
 void stack_test();
 void LINQ_test();
 void iterator_test();
+void sorting_benchmarks();
 
 #define BOOL_STRING(value) value ? "True" : "False"
 #define NULL_STRING(value) BOOL_STRING(value == NULL)
@@ -34,13 +36,13 @@ PRINT_BOOL(size(list) == expected)
 #define PRINT_EXPECTED_SIZE_STACK PRINT_EXPECTED_SIZE_GENERIC(stack)
 #define PRINT_LIST formatted_print("%d", test)
 
-
 int main(void)
 {
 	generic_functions_test();
 	stack_test();
 	LINQ_test();
 	iterator_test();
+	sorting_benchmarks();
 	printf("\n\n======== TESTS COMPLETED ========\n");
 	return 0;
 }
@@ -497,15 +499,20 @@ void LINQ_test()
 	printf("\n\n>> List max: ");
 	PRINT_WITH_CHECK(check, value);
 
-	// OrderBy
-	printf("\n\n>> Order by ascending:\n");
+	// InPlaceOrderBy
+	printf("\n\n>> In place order by ascending:\n");
 	temp = in_place_order_by(test, expression);
 	PRINT_TEMP;
 	DISPOSE_TEMP;
 
-	// OrderByDescending
-	printf("\n\n>> Order by descending:\n");
+	// InPlaceOrderByDescending
+	printf("\n\n>> In place order by descending:\n");
 	temp = in_place_order_by_descending(test, expression);
+	PRINT_TEMP;
+	DISPOSE_TEMP;
+
+	printf("\n\n>> Order by ascending:\n");
+	temp = order_by(test, expression);
 	PRINT_TEMP;
 	DISPOSE_TEMP;
 
@@ -625,6 +632,86 @@ void iterator_test()
 	result = destroy_iterator(&iterator);
 	printf("\n\n>> Iterator destroyed, is NULL: ");
 	PRINT_BOOL(result);
+}
+
+// Returns the local clock time
+inline float get_time()
+{
+	return (float)clock() / CLOCKS_PER_SEC;
+}
+
+// Performs a simple benchmark with the two sorting algorithms
+void perform_benchmark(int len, comparation(*expression)(T, T))
+{
+	printf("\n\n>> Test with %d elements", len);
+	List test, sorted;
+	float totalIntro = 0, totalBubble = 0;
+	int i;
+	for (i = 0; i < 10; i++)
+	{
+		test = create_random(len, -len, len);
+		float start, end;
+		start = get_time();
+		sorted = order_by(test, expression);
+		end = get_time();
+		destroy(&sorted);
+		totalIntro += end - start;
+	}
+	printf("\n\n>> Total intro: %f", totalIntro);
+	for (i = 0; i < 10; i++)
+	{
+		test = create_random(len, -len, len);
+		float start, end;
+		start = get_time();
+		sorted = in_place_order_by(test, expression);
+		end = get_time();
+		destroy(&sorted);
+		totalBubble += end - start;
+	}
+	printf("\n>> Total bubble: %f", totalBubble);
+}
+
+/* ---------------------------------------------------------------------
+*  SortingBenchmarks
+*  ---------------------------------------------------------------------
+*  Description:
+*    Tests the performances of the two sorting algorithms available */
+void sorting_benchmarks()
+{
+	printf("\n\n======== SORTING BENCHMARKS ========\n\n");
+
+	// Create random List
+	List test, sorted, compare;
+
+	// Comparator used to call the sorting functions
+	comparation(*expression)(T, T) = comparator(item1, item2,
+	{
+		if (item1 > item2) return GREATER;
+		else if (item2 > item1) return LOWER;
+		else return EQUAL;
+	});
+
+	// Introsort basic test
+	printf(">> Testing");
+	bool valid, i;
+	for (i = 0; i < 10; i++)
+	{
+		test = create_random(1000, -500, 500);
+		sorted = order_by(test, expression);
+		compare = in_place_order_by(test, expression);
+		valid = sequence_equals(sorted, compare, equalityTester(n1, n2,
+		{
+			return n1 == n2;
+		}));
+		destroy(&sorted);
+		destroy(&compare);
+		if (!valid) break;
+		if (i % 2 == 0) printf(".");
+	}
+	printf("\n\n>> Success: %s", valid ? "YES! :)" : "NO :'(");
+	
+	perform_benchmark(1000, expression);
+	perform_benchmark(5000, expression);
 }
 
 /* Copyright (C) 2015 Sergio Pedri
