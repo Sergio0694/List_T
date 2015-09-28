@@ -12,7 +12,7 @@
 #include "list_t.h"
 #include "Introsort\introsort.h"
 
-/* ===== List internal types ===== */
+/* ===== list_t internal types ===== */
 
 struct listElem
 {
@@ -35,10 +35,10 @@ struct listBase
 struct listIterator
 {
 	nodePointer pointer;
-	List list;
+	list_t list;
 	int position;
 	unsigned int sync;
-	bool started;
+	bool_t started;
 };
 
 typedef struct listIterator iteratorInstance;
@@ -48,14 +48,14 @@ typedef struct listIterator iteratorInstance;
 *  ========================================================================= */
 
 // Create
-List create()
+list_t create()
 {
-	List outList = (List)malloc(sizeof(struct listBase));
-	outList->head = NULL;
-	outList->tail = NULL;
-	outList->length = 0;
-	outList->sync = 0;
-	return outList;
+	list_t outlist_t = (list_t)malloc(sizeof(struct listBase));
+	outlist_t->head = NULL;
+	outlist_t->tail = NULL;
+	outlist_t->length = 0;
+	outlist_t->sync = 0;
+	return outlist_t;
 }
 
 #define GET_ITERATOR(target) nodePointer iterator = target
@@ -73,7 +73,7 @@ list->head = NULL;   \
 list->tail = NULL
 
 // Clear
-bool clear(List list)
+bool_t clear(list_t list)
 {
 	if (list == NULL) return FALSE;
 	if (list->length == 0) return TRUE;
@@ -100,7 +100,7 @@ bool clear(List list)
 }
 
 // Destroy
-bool destroy(List* list)
+bool_t destroy(list_t* list)
 {
 	if (clear(*list))
 	{
@@ -115,7 +115,7 @@ bool destroy(List* list)
 if (result != NULL) *result = value
 
 // DestroySequence
-void destroy_sequence(bool* result, List** pending)
+void destroy_sequence(bool_t* result, list_t** pending)
 {
 	if (pending == NULL)
 	{
@@ -127,7 +127,7 @@ void destroy_sequence(bool* result, List** pending)
 		ASSIGN_IF_NOT_NULL(FALSE);
 		return;
 	}
-	bool destroyed = FALSE;
+	bool_t destroyed = FALSE;
 	while (*pending)
 	{
 		destroy(*pending);
@@ -138,50 +138,50 @@ void destroy_sequence(bool* result, List** pending)
 }
 
 // Copy
-List copy(const List source)
+list_t copy(const list_t source)
 {
 	if (source == NULL) return NULL;
-	List outList = create();
-	if (source->length == 0) return outList;
+	list_t outlist_t = create();
+	if (source->length == 0) return outlist_t;
 	GET_ITERATOR(source->head);
 	while (iterator != NULL)
 	{
-		add(iterator->info, outList);
+		add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Create random
-List create_random(int length, int min, int max)
+list_t create_random(int length, int min, int max)
 {
 	if (min >= max) return NULL;
 	if (length == 0) return create();
-	List outList = create();
+	list_t outlist_t = create();
 	srand((unsigned)time(NULL));
 	while (length != 0)
 	{
-		add((T)((rand() % (max - min)) + min), outList);
+		add((T)((rand() % (max - min)) + min), outlist_t);
 		length--;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // CreateFrom
-List create_from(T* array, int size)
+list_t create_from(T* array, int size)
 {
 	if (array == NULL || size <= 0) return NULL;
-	List outList = create();
+	list_t outlist_t = create();
 	int i;
 	for (i = 0; i < size; i++)
 	{
-		add(array[i], outList);
+		add(array[i], outlist_t);
 	}
-	return outList;
+	return outlist_t;
 }
 
 // ToArray
-T* to_array(List list, int* size)
+T* to_array(list_t list, int* size)
 {
 	if (list == NULL || list->length == 0)
 	{
@@ -206,13 +206,13 @@ T* to_array(List list, int* size)
 #define RETURN_IF_EMPTY(list, value) if (CHECK_EMPTY(list)) return value
 
 // IsEmpty
-bool is_empty(List list)
+bool_t is_empty(list_t list)
 {
 	return CHECK_EMPTY(list);
 }
 
 // IsElement
-bool is_element(const T item, List list)
+bool_t is_element(const T item, list_t list)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_HEAD_ITERATOR;
@@ -225,7 +225,7 @@ bool is_element(const T item, List list)
 }
 
 // Inline function used inside the get_first and peek functions
-static inline bool GetFirst(List list, T* result)
+static inline bool_t GetFirst(list_t list, T* result)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	*result = list->head->info;
@@ -233,13 +233,13 @@ static inline bool GetFirst(List list, T* result)
 }
 
 // GetFirst
-bool get_first(List list, T* result)
+bool_t get_first(list_t list, T* result)
 {
 	return GetFirst(list, result);
 }
 
 // GetLast
-bool get_last(List list, T* result)
+bool_t get_last(list_t list, T* result)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	*result = list->tail->info;
@@ -247,10 +247,10 @@ bool get_last(List list, T* result)
 }
 
 // Get
-bool get(List list, int index, T* result)
+bool_t get(list_t list, int index, T* result)
 {
 	if (index < 0 || index >= list->length) return FALSE;
-	bool fromHead = index <= list->length / 2;
+	bool_t fromHead = index <= list->length / 2;
 	if (fromHead)
 	{
 		int position = 0;
@@ -283,7 +283,7 @@ bool get(List list, int index, T* result)
 }
 
 // IndexOf
-int index_of(const T item, List list)
+int index_of(const T item, list_t list)
 {
 	RETURN_IF_EMPTY(list, -1);
 	int index = 0;
@@ -297,7 +297,7 @@ int index_of(const T item, List list)
 }
 
 // LastIndexOf
-int last_index_of(const T item, List list)
+int last_index_of(const T item, list_t list)
 {
 	RETURN_IF_EMPTY(list, -1);
 	int index = list->length - 1;
@@ -311,7 +311,7 @@ int last_index_of(const T item, List list)
 }
 
 // Add
-bool add(const T item, List list)
+bool_t add(const T item, list_t list)
 {
 	if (list == NULL) return FALSE;
 	nodePointer newNode = (nodePointer)malloc(sizeof(listNode));
@@ -335,11 +335,11 @@ bool add(const T item, List list)
 }
 
 // AddAt
-bool add_at(const T item, List list, int index)
+bool_t add_at(const T item, list_t list, int index)
 {
 	if (CHECK_EMPTY(list) || index < 0 || index >= list->length) return FALSE;
 	if (index == 0) return add(item, list);
-	bool fromHead = index <= list->length / 2;
+	bool_t fromHead = index <= list->length / 2;
 	nodePointer newNode = (nodePointer)malloc(sizeof(listNode));
 	newNode->info = item;
 	if (fromHead)
@@ -382,7 +382,7 @@ bool add_at(const T item, List list, int index)
 }
 
 // AddAll
-bool add_all(List target, const List source)
+bool_t add_all(list_t target, const list_t source)
 {
 	if (target == NULL) return FALSE;
 	RETURN_IF_EMPTY(source, FALSE);
@@ -398,13 +398,13 @@ bool add_all(List target, const List source)
 #define SIZE(list) list == NULL ? -1 : list->length
 
 // Size
-int size(List list)
+int size(list_t list)
 {
 	return SIZE(list);
 }
 
 // RemoveItem
-bool remove_item(const T item, List list)
+bool_t remove_item(const T item, list_t list)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	if (list->length == 1)
@@ -425,7 +425,7 @@ bool remove_item(const T item, List list)
 	{
 		if (iterator->info == item)
 		{
-			// First node inside the List
+			// First node inside the list_t
 			if (iterator->previous == NULL)
 			{
 				iterator->next->previous = NULL;
@@ -433,13 +433,13 @@ bool remove_item(const T item, List list)
 			}
 			else if (iterator->next == NULL)
 			{
-				//Last node of the List
+				//Last node of the list_t
 				iterator->previous->next = NULL;
 				list->tail = iterator->previous;
 			}
 			else 
 			{
-				// Random position inside the List
+				// Random position inside the list_t
 				iterator->previous->next = iterator->next;
 				iterator->next->previous = iterator->previous;
 			}			
@@ -454,7 +454,7 @@ bool remove_item(const T item, List list)
 }
 
 // RemoveAt
-bool remove_at(List list, int index)
+bool_t remove_at(list_t list, int index)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	if (index < 0 || index >= list->length) return FALSE;
@@ -487,7 +487,7 @@ bool remove_at(List list, int index)
 		SYNC_PLUS;
 		return TRUE;
 	}
-	bool fromHead = index <= list->length / 2;
+	bool_t fromHead = index <= list->length / 2;
 	if (fromHead)
 	{
 		int position = 0;
@@ -526,7 +526,7 @@ bool remove_at(List list, int index)
 }
 
 // RemoveAllItems
-int remove_all_items(const T item, List list)
+int remove_all_items(const T item, list_t list)
 {
 	RETURN_IF_EMPTY(list, -1);
 	if (list->length == 1)
@@ -544,7 +544,7 @@ int remove_all_items(const T item, List list)
 	{
 		if (iterator->info == item)
 		{
-			// Last element inside the List
+			// Last element inside the list_t
 			if (list->length == 1)
 			{
 				clear(list);
@@ -563,7 +563,7 @@ int remove_all_items(const T item, List list)
 				return total + 1;
 			}
 
-			// First element inside the List
+			// First element inside the list_t
 			if (iterator->previous == NULL)
 			{
 				list->head = iterator->next;
@@ -588,7 +588,7 @@ int remove_all_items(const T item, List list)
 }
 
 // ReplaceItem
-bool replace_item(const T target, const T replacement, List list)
+bool_t replace_item(const T target, const T replacement, list_t list)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_HEAD_ITERATOR;
@@ -606,10 +606,10 @@ bool replace_item(const T target, const T replacement, List list)
 }
 
 // ReplaceAt
-bool replace_at(const T item, List list, int index)
+bool_t replace_at(const T item, list_t list, int index)
 {
 	if (list == NULL || index < 0 || index >= list->length) return FALSE;
-	bool fromHead = index <= list->length / 2;
+	bool_t fromHead = index <= list->length / 2;
 	if (fromHead)
 	{
 		int position = 0;
@@ -644,7 +644,7 @@ bool replace_at(const T item, List list, int index)
 }
 
 // ReplaceAllItems
-int replace_all_items(const T target, const T replacement, List list)
+int replace_all_items(const T target, const T replacement, list_t list)
 {
 	RETURN_IF_EMPTY(list, -1);
 	GET_HEAD_ITERATOR;
@@ -663,7 +663,7 @@ int replace_all_items(const T target, const T replacement, List list)
 }
 
 // Swap
-bool swap(List list, int index1, int index2)
+bool_t swap(list_t list, int index1, int index2)
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	if (index1 < 0 || index1 >= list->length || index2 < 0
@@ -677,7 +677,7 @@ bool swap(List list, int index1, int index2)
 }
 
 // FormattedPrint
-bool formatted_print(char* pattern, List list)
+bool_t formatted_print(char* pattern, list_t list)
 {
 	if (list == NULL)
 	{
@@ -700,7 +700,7 @@ bool formatted_print(char* pattern, List list)
 }
 
 // Print
-bool print(char* pattern, List list)
+bool_t print(char* pattern, list_t list)
 {
 	if (list == NULL) return FALSE;
 	GET_HEAD_ITERATOR;
@@ -713,11 +713,11 @@ bool print(char* pattern, List list)
 }
 
 /* ============================================================================
-*  Stack
+*  stack_t
 *  ========================================================================= */
 
 // Push
-bool push(const T item, Stack stack)
+bool_t push(const T item, stack_t stack)
 {
 	if (stack == NULL) return FALSE;
 	if (stack->length == 0)
@@ -736,7 +736,7 @@ bool push(const T item, Stack stack)
 }
 
 // Pop
-bool pop(Stack stack, T* result)
+bool_t pop(stack_t stack, T* result)
 {
 	RETURN_IF_EMPTY(stack, FALSE);
 	*result = stack->head->info;
@@ -759,7 +759,7 @@ bool pop(Stack stack, T* result)
 }
 
 // Peek
-bool peek(Stack stack, T* result)
+bool_t peek(stack_t stack, T* result)
 {
 	return GetFirst(stack, result);
 }
@@ -769,7 +769,7 @@ bool peek(Stack stack, T* result)
 *  ========================================================================= */
 
 // FirstOrDefault
-bool first_or_default(List list, T* result, bool(*expression)(T))
+bool_t first_or_default(list_t list, T* result, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_HEAD_ITERATOR;
@@ -786,7 +786,7 @@ bool first_or_default(List list, T* result, bool(*expression)(T))
 }
 
 // LastOrDefault
-bool last_or_default(List list, T* result, bool(*expression)(T))
+bool_t last_or_default(list_t list, T* result, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_TAIL_ITERATOR;
@@ -803,7 +803,7 @@ bool last_or_default(List list, T* result, bool(*expression)(T))
 }
 
 // Count
-int count(List list, bool(*expression)(T))
+int count(list_t list, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, -1);
 	int total = 0;
@@ -817,7 +817,7 @@ int count(List list, bool(*expression)(T))
 }
 
 // FirstIndexWhere
-int first_index_where(List list, bool(*expression)(T))
+int first_index_where(list_t list, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, -1);
 	int position = 0;
@@ -831,7 +831,7 @@ int first_index_where(List list, bool(*expression)(T))
 }
 
 // LastIndexWhere
-int last_index_where(List list, bool(*expression)(T))
+int last_index_where(list_t list, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, -1);
 	int position = list->length - 1;
@@ -845,45 +845,45 @@ int last_index_where(List list, bool(*expression)(T))
 }
 
 // Where
-List where(List list, bool(*expression)(T))
+list_t where(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		if (expression(iterator->info)) add(iterator->info, outList);
+		if (expression(iterator->info)) add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // TakeWhile
-List take_while(List list, bool(*expression)(T))
+list_t take_while(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
 		if (expression(iterator->info))
 		{
-			add(iterator->info, outList);
+			add(iterator->info, outlist_t);
 			MOVE_NEXT;
 		}
 		else break;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // TakeRange
-List take_range(List list, int start, int end)
+list_t take_range(list_t list, int start, int end)
 {
 	NULL_IF_EMPTY(list);
 	if (start < 0 || end < 0 || start >= list->length
 		|| end >= list->length || start >= end) return NULL;
-	List outList = create();	
-	bool fromHead = start <= list->length / 2;
+	list_t outlist_t = create();	
+	bool_t fromHead = start <= list->length / 2;
 	nodePointer iterator;
 	if (fromHead)
 	{
@@ -908,49 +908,49 @@ List take_range(List list, int start, int end)
 	int elements = end + 1 - start;
 	while (elements > 0)
 	{
-		add(iterator->info, outList);
+		add(iterator->info, outlist_t);
 		iterator = iterator->next;
 		elements--;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Concat
-List concat(List list1, List list2)
+list_t concat(list_t list1, list_t list2)
 {
 	if (list1 == NULL || list2 == NULL) return NULL;
 	if (list1->length == 0) return copy(list2);
-	List outList = copy(list1);
-	if (list2->length == 0) return outList;
+	list_t outlist_t = copy(list1);
+	if (list2->length == 0) return outlist_t;
 	GET_ITERATOR(list2->head);
 	while (iterator != NULL)
 	{
-		add(iterator->info, outList);
+		add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 #define GET_COUPLE_ITERATORS                                   \
 nodePointer iterator1 = list1->head, iterator2 = list2->head
 
 // Zip
-List zip(List list1, List list2, T(*expression)(T, T))
+list_t zip(list_t list1, list_t list2, T(*expression)(T, T))
 {
 	if (CHECK_EMPTY(list1) || CHECK_EMPTY(list2)) return NULL;
 	GET_COUPLE_ITERATORS;
-	List outList = create();
+	list_t outlist_t = create();
 	while (iterator1 != NULL && iterator2 != NULL)
 	{
-		add(expression(iterator1->info, iterator2->info), outList);
+		add(expression(iterator1->info, iterator2->info), outlist_t);
 		iterator1 = iterator1->next;
 		iterator2 = iterator2->next;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Any
-bool any(List list, bool(*expression)(T))
+bool_t any(list_t list, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_HEAD_ITERATOR;
@@ -963,7 +963,7 @@ bool any(List list, bool(*expression)(T))
 }
 
 // All
-bool all(List list, bool(*expression)(T))
+bool_t all(list_t list, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_HEAD_ITERATOR;
@@ -976,27 +976,27 @@ bool all(List list, bool(*expression)(T))
 }
 
 // Skip
-List skip(List list, int count)
+list_t skip(list_t list, int count)
 {
 	NULL_IF_EMPTY(list);
 	if (count >= list->length) return NULL;
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
 		if (count) count--;
-		else add(iterator->info, outList);
+		else add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // SkipWhile
-List skip_while(List list, bool(*expression)(T))
+list_t skip_while(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
-	bool triggered = FALSE;
+	list_t outlist_t = create();
+	bool_t triggered = FALSE;
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
@@ -1009,14 +1009,14 @@ List skip_while(List list, bool(*expression)(T))
 			}
 			else triggered = TRUE;
 		}
-		add(iterator->info, outList);
+		add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // ForEach
-bool for_each(List list, void(*expression)(T))
+bool_t for_each(list_t list, void(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_HEAD_ITERATOR;
@@ -1029,7 +1029,7 @@ bool for_each(List list, void(*expression)(T))
 }
 
 // InverseForEach
-bool inverse_for_each(List list, void(*expression)(T))
+bool_t inverse_for_each(list_t list, void(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	GET_TAIL_ITERATOR;
@@ -1043,7 +1043,7 @@ bool inverse_for_each(List list, void(*expression)(T))
 
 #define LIST_CONTAINS(list)                                 \
 nodePointer backupIterator = list->head;                    \
-bool found = FALSE;                                         \
+bool_t found = FALSE;                                       \
 while (backupIterator != NULL)                              \
 {                                                           \
 	if (expression(iterator->info, backupIterator->info))   \
@@ -1058,34 +1058,34 @@ while (backupIterator != NULL)                              \
 if (list1 == NULL || list2 == NULL) return NULL
 
 // Join
-List join(List list1, List list2, bool(*expression)(T, T))
+list_t join(list_t list1, list_t list2, bool_t(*expression)(T, T))
 {
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0) return copy(list2);
-	List outList = copy(list1);
-	if (list2->length == 0) return outList;
+	list_t outlist_t = copy(list1);
+	if (list2->length == 0) return outlist_t;
 	GET_ITERATOR(list2->head);
 	while (iterator != NULL)
 	{
 		LIST_CONTAINS(list1);
-		if (!found) add(iterator->info, outList);
+		if (!found) add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // JoinWhere
-List join_where(List list1, List list2, bool(*condition)(T), bool(*expression)(T, T))
+list_t join_where(list_t list1, list_t list2, bool_t(*condition)(T), bool_t(*expression)(T, T))
 {
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0 && list2->length == 0) return create();
 	if (list1->length == 0) return where(list2, condition);
 	if (list2->length == 0) return where(list1, condition);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_ITERATOR(list1->head);
 	while (iterator != NULL)
 	{
-		if (condition(iterator->info)) add(iterator->info, outList);
+		if (condition(iterator->info)) add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
 	iterator = list2->head;
@@ -1093,75 +1093,75 @@ List join_where(List list1, List list2, bool(*condition)(T), bool(*expression)(T
 	{
 		if (condition(iterator->info)) 
 		{
-			LIST_CONTAINS(outList);
-			if (!found) add(iterator->info, outList);
+			LIST_CONTAINS(outlist_t);
+			if (!found) add(iterator->info, outlist_t);
 		}
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Intersect
-List intersect(List list1, List list2, bool(*expression)(T, T))
+list_t intersect(list_t list1, list_t list2, bool_t(*expression)(T, T))
 {
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0 || list2->length == 0) return create();
-	List outList = create();
+	list_t outlist_t = create();
 	GET_ITERATOR(list1->head);
 	while (iterator != NULL)
 	{
 		LIST_CONTAINS(list2);
-		if (found) add(iterator->info, outList);
+		if (found) add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Except
-List except(List list1, List list2, bool(*expression)(T, T))
+list_t except(list_t list1, list_t list2, bool_t(*expression)(T, T))
 {
 	NULL_IF_EITHER_ONE_NULL;
 	if (list1->length == 0) return create();
 	if (list2->length == 0) return copy(list1);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_ITERATOR(list1->head);
 	while (iterator != NULL)
 	{
 		LIST_CONTAINS(list2);
-		if (!found) add(iterator->info, outList);
+		if (!found) add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Reverse
-List reverse(List list)
+list_t reverse(list_t list)
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_TAIL_ITERATOR;
 	while (iterator != NULL)
 	{
-		add(iterator->info, outList);
+		add(iterator->info, outlist_t);
 		MOVE_BACK;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // ReverseRange
-List reverse_range(List list, int start, int end)
+list_t reverse_range(list_t list, int start, int end)
 {
 	NULL_IF_EMPTY(list);
 	if (start < 0 || end < 0 || start >= list->length
 		|| end >= list->length || start >= end) return NULL;
-	List outList = copy(list);
+	list_t outlist_t = copy(list);
 	while (start <= end)
 	{
-		swap(outList, start, end);
+		swap(outlist_t, start, end);
 		start++;
 		end--;
 	}
-	return outList;
+	return outlist_t;
 }
 
 #define GET_LIST_SUM                         \
@@ -1175,21 +1175,21 @@ while (iterator != NULL)                     \
 }
 
 // Sum
-int sum(List list, int(*expression)(T))
+int sum(list_t list, int(*expression)(T))
 {
 	GET_LIST_SUM;
 	return total;
 }
 
 // Average
-int average(List list, int(*expression)(T))
+int average(list_t list, int(*expression)(T))
 {
 	GET_LIST_SUM;
 	return total / list->length;
 }
 
 // GetNumericMin
-int get_numeric_min(List list, int(*expression)(T))
+int get_numeric_min(list_t list, int(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, (T)NULL);
 	GET_HEAD_ITERATOR;
@@ -1206,7 +1206,7 @@ int get_numeric_min(List list, int(*expression)(T))
 #define FIRST_IF_SINGLE_ITEM if (list->length == 1) return list->head->info
 
 // GetMin
-bool get_min(List list, T* result, comparation(*expression)(T, T))
+bool_t get_min(list_t list, T* result, comparation(*expression)(T, T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	FIRST_IF_SINGLE_ITEM;
@@ -1222,7 +1222,7 @@ bool get_min(List list, T* result, comparation(*expression)(T, T))
 }
 
 // GetNumericMax
-int get_numeric_max(List list, int(*expression)(T))
+int get_numeric_max(list_t list, int(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, (T)NULL);
 	GET_HEAD_ITERATOR;
@@ -1237,7 +1237,7 @@ int get_numeric_max(List list, int(*expression)(T))
 }
 
 // GetMax
-bool get_max(List list, T* result, comparation(*expression)(T, T))
+bool_t get_max(list_t list, T* result, comparation(*expression)(T, T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
 	FIRST_IF_SINGLE_ITEM;
@@ -1253,12 +1253,12 @@ bool get_max(List list, T* result, comparation(*expression)(T, T))
 }
 
 // OrderHelper
-static inline List orderHelper(List list, comparation(*expression)(T, T), bool reverse)
+static inline list_t orderHelper(list_t list, comparation(*expression)(T, T), bool_t reverse)
 {
-	List outList = copy(list);
-	if (list->length == 1) return outList;
-	bool sorted = FALSE;
-	GET_ITERATOR(outList->head);
+	list_t outlist_t = copy(list);
+	if (list->length == 1) return outlist_t;
+	bool_t sorted = FALSE;
+	GET_ITERATOR(outlist_t->head);
 	while (TRUE)
 	{
 		comparation result = expression(iterator->info, iterator->next->info);
@@ -1273,35 +1273,36 @@ static inline List orderHelper(List list, comparation(*expression)(T, T), bool r
 			iterator->next->info = backup;
 			sorted = TRUE;
 		}
-		bool loopEnd = iterator->next->next == NULL ? TRUE : FALSE;
+		bool_t loopEnd = iterator->next->next == NULL ? TRUE : FALSE;
 		if (loopEnd && sorted)
 		{
-			iterator = outList->head;
+			iterator = outlist_t->head;
 			sorted = FALSE;
 		}
 		else if (loopEnd) break;
 		else MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // InPlaceOrderBy
-List in_place_order_by(List list, comparation(*expression)(T, T))
+list_t in_place_order_by(list_t list, comparation(*expression)(T, T))
 {
 	NULL_IF_EMPTY(list);
 	return orderHelper(list, expression, FALSE);
 }
 
 // InPlaceOrderByDescending
-List in_place_order_by_descending(List list, comparation(*expression)(T, T))
+list_t in_place_order_by_descending(list_t list, comparation(*expression)(T, T))
 {
 	NULL_IF_EMPTY(list);
 	return orderHelper(list, expression, TRUE);
 }
 
 // OrderBy
-List order_by(List list, comparation(*expression)(T, T))
+list_t order_by(list_t list, comparation(*expression)(T, T))
 {
+	NULL_IF_EMPTY(list);
 	int len;
 	T* temp_vector = to_array(list, &len);
 	introsort(temp_vector, len, expression);
@@ -1310,15 +1311,38 @@ List order_by(List list, comparation(*expression)(T, T))
 	return list;
 }
 
+// OrderByDescending
+list_t order_by_descending(list_t list, comparation(*expression)(T, T))
+{
+	// Get the sorted array
+	NULL_IF_EMPTY(list);
+	int len;
+	T* temp_vector = to_array(list, &len);
+	introsort(temp_vector, len, expression);
+
+	// Reverse the array and return a new list
+	int i, target = len >> 1;
+	for (i = 0; i < target; i++)
+	{
+		T temp = temp_vector[i];
+		temp_vector[i] = temp_vector[target];
+		temp_vector[target] = temp;
+		target--;
+	}
+	list = create_from(temp_vector, len);
+	free(temp_vector);
+	return list;
+}
+
 /* ============== Other LINQ functions ============== */
 
 #define GET_DISTINCT_LIST                                       \
-List outList = create();                                        \
+list_t outlist_t = create();                                    \
 GET_HEAD_ITERATOR;                                              \
 while (iterator != NULL)                                        \
 {                                                               \
-	nodePointer testIterator = outList->head;                   \
-	bool found = FALSE;                                         \
+	nodePointer testIterator = outlist_t->head;                 \
+	bool_t found = FALSE;                                       \
 	while (testIterator != NULL)                                \
 	{                                                           \
 		if (expression(iterator->info, testIterator->info))     \
@@ -1328,32 +1352,32 @@ while (iterator != NULL)                                        \
 		}                                                       \
 		testIterator = testIterator->next;                      \
 	}                                                           \
-	if (!found) add(iterator->info, outList);                   \
+	if (!found) add(iterator->info, outlist_t);                 \
 	MOVE_NEXT;                                                  \
 }
 
 // Distinct
-List distinct(List list, bool(*expression)(T, T))
+list_t distinct(list_t list, bool_t(*expression)(T, T))
 {
 	NULL_IF_EMPTY(list);
 	GET_DISTINCT_LIST;
-	return outList;
+	return outlist_t;
 }
 
 // CountDistinct
-int count_distinct(List list, bool(*expression)(T, T))
+int count_distinct(list_t list, bool_t(*expression)(T, T))
 {
 	if (list == NULL) return -1;
 	if (list->length == 0) return 0;
 	GET_DISTINCT_LIST;
-	return outList->length;
+	return outlist_t->length;
 }
 
 // Single
-bool single(List list, T* result, bool(*expression)(T))
+bool_t single(list_t list, T* result, bool_t(*expression)(T))
 {
 	RETURN_IF_EMPTY(list, FALSE);
-	bool found = FALSE;
+	bool_t found = FALSE;
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
@@ -1369,50 +1393,50 @@ bool single(List list, T* result, bool(*expression)(T))
 }
 
 // RemoveWhere
-List remove_where(List list, bool(*expression)(T))
+list_t remove_where(list_t list, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		if (!expression(iterator->info)) add(iterator->info, outList);
+		if (!expression(iterator->info)) add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // ReplaceWhere
-List replace_where(List list, const T replacement, bool(*expression)(T))
+list_t replace_where(list_t list, const T replacement, bool_t(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		if (expression(iterator->info)) add(replacement, outList);
-		else add(iterator->info, outList);
+		if (expression(iterator->info)) add(replacement, outlist_t);
+		else add(iterator->info, outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // Derive
-List derive(List list, T(*expression)(T))
+list_t derive(list_t list, T(*expression)(T))
 {
 	NULL_IF_EMPTY(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	while (iterator != NULL)
 	{
-		add(expression(iterator->info), outList);
+		add(expression(iterator->info), outlist_t);
 		MOVE_NEXT;
 	}
-	return outList;
+	return outlist_t;
 }
 
 // SequenceEquals
-bool sequence_equals(List list1, List list2, bool(*expression)(T, T))
+bool_t sequence_equals(list_t list1, list_t list2, bool_t(*expression)(T, T))
 {
 	if (list1 == NULL || list2 == NULL)
 	{
@@ -1430,19 +1454,19 @@ bool sequence_equals(List list1, List list2, bool(*expression)(T, T))
 }
 
 // Trim
-List trim(List list, int length)
+list_t trim(list_t list, int length)
 {
 	NULL_IF_EMPTY(list);
 	if (list->length <= length) return copy(list);
-	List outList = create();
+	list_t outlist_t = create();
 	GET_HEAD_ITERATOR;
 	int position = 0;
 	while (position < length)
 	{
-		add(iterator->info, outList);
+		add(iterator->info, outlist_t);
 		MOVE_NEXT_W_INDEX(position);
 	}
-	return outList;
+	return outlist_t;
 }
 
 /* ============================================================================
@@ -1450,10 +1474,10 @@ List trim(List list, int length)
 *  ========================================================================= */
 
 // GetIterator
-ListIterator get_iterator(List list)
+list_iterator_t get_iterator(list_t list)
 {
 	NULL_IF_EMPTY(list);
-	ListIterator iterator = (ListIterator)malloc(sizeof(iteratorInstance));
+	list_iterator_t iterator = (list_iterator_t)malloc(sizeof(iteratorInstance));
 	iterator->list = list;
 	iterator->pointer = list->head;
 	iterator->position = 0;
@@ -1463,7 +1487,7 @@ ListIterator get_iterator(List list)
 }
 
 // DestroyIterator
-bool destroy_iterator(ListIterator* iterator)
+bool_t destroy_iterator(list_iterator_t* iterator)
 {
 	if (*iterator == NULL) return FALSE;
 	free(*iterator);
@@ -1472,7 +1496,7 @@ bool destroy_iterator(ListIterator* iterator)
 }
 
 // IsSynced
-bool is_synced(ListIterator iterator)
+bool_t is_synced(list_iterator_t iterator)
 {
 	if (iterator == NULL) return FALSE;
 	return iterator->sync == iterator->list->sync ? TRUE : FALSE;
@@ -1482,7 +1506,7 @@ bool is_synced(ListIterator iterator)
 if (iterator->sync != iterator->list->sync) return value;
 
 // GetCurrent
-bool get_current(ListIterator iterator, T* result)
+bool_t get_current(list_iterator_t iterator, T* result)
 {
 	if (iterator == NULL) return FALSE;
 	RETURN_IF_OUT_OF_SYNC(FALSE);
@@ -1491,7 +1515,7 @@ bool get_current(ListIterator iterator, T* result)
 }
 
 // Next
-bool next(ListIterator iterator, T* result)
+bool_t next(list_iterator_t iterator, T* result)
 {
 	if (iterator == NULL) return FALSE;
 	RETURN_IF_OUT_OF_SYNC(FALSE);
@@ -1507,7 +1531,7 @@ bool next(ListIterator iterator, T* result)
 }
 
 // CheckGoForward
-static inline bool checkGoForward(ListIterator iterator)
+static inline bool_t checkGoForward(list_iterator_t iterator)
 {
 	if (iterator == NULL) return FALSE;
 	RETURN_IF_OUT_OF_SYNC(FALSE);
@@ -1515,13 +1539,13 @@ static inline bool checkGoForward(ListIterator iterator)
 }
 
 // CanGoForward
-bool can_go_forward(ListIterator iterator)
+bool_t can_go_forward(list_iterator_t iterator)
 {
 	return checkGoForward(iterator);
 }
 
 // CheckGoBack
-static inline bool checkGoBack(ListIterator iterator)
+static inline bool_t checkGoBack(list_iterator_t iterator)
 {
 	if (iterator == NULL) return FALSE;
 	RETURN_IF_OUT_OF_SYNC(FALSE);
@@ -1529,13 +1553,13 @@ static inline bool checkGoBack(ListIterator iterator)
 }
 
 // CanGoBack
-bool can_go_back(ListIterator iterator)
+bool_t can_go_back(list_iterator_t iterator)
 {
 	return checkGoBack(iterator);
 }
 
 // MoveNext
-bool move_next(ListIterator iterator)
+bool_t move_next(list_iterator_t iterator)
 {
 	if (!checkGoForward(iterator)) return FALSE;
 	iterator->pointer = iterator->pointer->next;
@@ -1545,7 +1569,7 @@ bool move_next(ListIterator iterator)
 }
 
 // MoveBack
-bool move_back(ListIterator iterator)
+bool_t move_back(list_iterator_t iterator)
 {
 	if (!checkGoBack(iterator)) return FALSE;
 	iterator->pointer = iterator->pointer->previous;
@@ -1554,7 +1578,7 @@ bool move_back(ListIterator iterator)
 }
 
 // ActualPosition
-int actual_position(ListIterator iterator)
+int actual_position(list_iterator_t iterator)
 {
 	if (iterator == NULL) return -1;
 	RETURN_IF_OUT_OF_SYNC(-1);
@@ -1562,7 +1586,7 @@ int actual_position(ListIterator iterator)
 }
 
 // ElementsLeft
-int elements_left(ListIterator iterator)
+int elements_left(list_iterator_t iterator)
 {
 	if (iterator == NULL) return -1;
 	RETURN_IF_OUT_OF_SYNC(-1);
@@ -1570,7 +1594,7 @@ int elements_left(ListIterator iterator)
 }
 
 // ForEachRemaining
-int for_each_remaining(ListIterator iterator, void(*expression)(T))
+int for_each_remaining(list_iterator_t iterator, void(*expression)(T))
 {
 	if (iterator == NULL) return -1;
 	RETURN_IF_OUT_OF_SYNC(-1);
@@ -1587,7 +1611,7 @@ int for_each_remaining(ListIterator iterator, void(*expression)(T))
 }
 
 // Restart
-bool restart(ListIterator iterator)
+bool_t restart(list_iterator_t iterator)
 {
 	if (iterator == NULL) return FALSE;
 	iterator->position = 0;

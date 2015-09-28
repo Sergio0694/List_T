@@ -51,41 +51,41 @@ int main(void)
 *  GenericFunctionsTest
 *  ---------------------------------------------------------------------
 *  Description:
-*    Shows all the functions used to create and manage a List. 
+*    Shows all the functions used to create and manage a list_t. 
 *  NOTE:
 *    Most of these functions work with SIDE EFFECT. */
 void generic_functions_test()
 {
 	printf("\n======== GENERIC FUNCTIONS ========\n\n");
 
-	// Create random List
-	List test = create_random(10, -20, 30);
+	// Create random list_t
+	list_t test = create_random(10, -20, 30);
 	printf(">> Random list with 10 elements from -20 to 30:\n");
 	PRINT_LIST;
 	int expected = 10;
 	PRINT_EXPECTED_SIZE;
 
-	// Copy List
-	List copied = copy(test);
-	printf("\n\n>> Copy of the List:\n");
+	// Copy list_t
+	list_t copied = copy(test);
+	printf("\n\n>> Copy of the list_t:\n");
 	PRINT_LIST;
 	PRINT_EXPECTED_SIZE;
 
-	// Destroy List
+	// Destroy list_t
 	destroy(&copied);
 	printf("\n\n>> Copy destroyed, pointer = NULL ---> ");
 	PRINT_NULL(copied);
 	int length;
 
 	// DestroySeries
-	List a, b, c, d;
+	list_t a, b, c, d;
 	a = create_random(20, -20, 20);
 	b = create_random(20, -20, 20);
 	c = create_random(20, -20, 20);
 	d = create_random(20, -20, 20);
-	printf("\n\n>> Created 4 temp Lists, total elements: %d",
+	printf("\n\n>> Created 4 temp list_ts, total elements: %d",
 		   size(a) + size(b) + size(c) + size(d));
-	bool confirm;
+	bool_t confirm;
 	destroy_series(&confirm, &a, &b, &c, &d);
 	printf("\n\n>> Series destroyed ---> ");
 	PRINT_BOOL(confirm);
@@ -98,9 +98,9 @@ void generic_functions_test()
 	printf("\nd == NULL: ");
 	PRINT_NULL(d);
 
-	// List to array
+	// list_t to array
 	T* array = to_array(test, &length);
-	printf("\n\n>> List to array:\n");
+	printf("\n\n>> list_t to array:\n");
 	int i = 0;
 	for (i = 0; i < length; i++)
 	{
@@ -109,30 +109,30 @@ void generic_functions_test()
 	}
 	destroy(&test);
 
-	// Array to List
+	// Array to list_t
 	test = create_from(array, length);
 	free(array);
-	printf("\n\n>> List recreated from array:\n");
+	printf("\n\n>> list_t recreated from array:\n");
 	PRINT_LIST;
 	PRINT_EXPECTED_SIZE;
 
 	// Is empty
-	printf("\n\n>> List empty: ");
+	printf("\n\n>> list_t empty: ");
 	PRINT_BOOL(is_empty(test));
-	printf("\n\n>> Empty List created, empty: ");
-	List empty = create();
+	printf("\n\n>> Empty list_t created, empty: ");
+	list_t empty = create();
 	PRINT_BOOL(is_empty(empty));
 	destroy(&empty);
 
 	// Add, is element
 	add(17, test);
 	expected++;
-	printf("\n\n>> 17 added to the List:\n");
+	printf("\n\n>> 17 added to the list_t:\n");
 	PRINT_LIST;
 	PRINT_EXPECTED_SIZE;
-	printf("\n\n>> 17 contained inside the List: ");
+	printf("\n\n>> 17 contained inside the list_t: ");
 	PRINT_BOOL(is_element(17, test));
-	printf("\n\n>> 200 is element inside the List: ");
+	printf("\n\n>> 200 is element inside the list_t: ");
 	PRINT_BOOL(is_element(200, test));
 
 	// Temp value for the get functions
@@ -168,16 +168,16 @@ void generic_functions_test()
 	PRINT_EXPECTED_SIZE;
 
 	// Add all
-	List toAdd = create_random(3, 1, 10);
+	list_t toAdd = create_random(3, 1, 10);
 	add_all(test, toAdd);
-	printf("\n\n>> Created a List with 3 elements, added to the first one:\n");
+	printf("\n\n>> Created a list_t with 3 elements, added to the first one:\n");
 	PRINT_LIST;
 	destroy(&toAdd);
 	expected += 3;
 	PRINT_EXPECTED_SIZE;
 
 	// Size
-	printf("\n\n>> Size of the List: %d", size(test));
+	printf("\n\n>> Size of the list_t: %d", size(test));
 
 	// Remove item
 	printf("\n\n>> Remove first occurrence of the number 17:\n");
@@ -208,9 +208,9 @@ void generic_functions_test()
 	printf("\nRemoved %d times", counter);
 	expected -= counter;
 	PRINT_EXPECTED_SIZE;
-	List allEquals = create();
+	list_t allEquals = create();
 	for (i = 0; i < 10; i++) add(10, allEquals);
-	printf("\n\n>> Creating a List with 10 equal numbers:\n");
+	printf("\n\n>> Creating a list_t with 10 equal numbers:\n");
 	PRINT_LIST;
 	printf("\n\n>> Removing all 10s:\n");
 	remove_all_items(10, allEquals);
@@ -253,10 +253,10 @@ void generic_functions_test()
 }
 
 /* ---------------------------------------------------------------------
-*  StackTest
+*  stack_tTest
 *  ---------------------------------------------------------------------
 *  Description:
-*    Shows all the functions used to manage a Stack.
+*    Shows all the functions used to manage a stack_t.
 *  NOTE:
 *    The Push and Pop functions work with SIDE EFFECT. */
 void stack_test()
@@ -264,7 +264,7 @@ void stack_test()
 	printf("\n\n======== STACK FUNCTIONS ========\n\n");
 
 	// Push
-	Stack stack = create();
+	stack_t stack = create();
 	int i, expected = 10;
 	for (i = 0; i < 10; i++) push(i, stack);
 	printf(">>Pushed 10 elements from 0 to 9:\n");
@@ -284,7 +284,7 @@ void stack_test()
 	PRINT_EXPECTED_SIZE_STACK;
 
 	// Peek
-	printf("\n\n>> Actual Stack:\n");
+	printf("\n\n>> Actual stack_t:\n");
 	formatted_print("%d", stack);
 	T temp;
 	peek(stack, &temp);
@@ -302,25 +302,25 @@ else printf("%d", item)
 *  ---------------------------------------------------------------------
 *  Description:
 *    Shows all the LINQ-Style (.NET) functions that can be used to get
-*    informations from a List or to create new ones.
+*    informations from a list_t or to create new ones.
 *    Most of these functions take a pointer to function argument: it
 *    is possible to create a standard function and pass a pointer to
 *    it, or to create a lambda expression using the macro defined inside
 *    the header file.
 *  NOTE:
-*    These functions are FUNCTIONAL and do NOT edit the input Lists. */
+*    These functions are FUNCTIONAL and do NOT edit the input list_ts. */
 void LINQ_test()
 {
 	printf("\n\n======== LINQ FUNCTIONS ========\n\n");
 
 	// Create random list
-	List test = create_random(15, -20, 30);
+	list_t test = create_random(15, -20, 30);
 	printf(">> Random list with 15 elements from -20 to 30:\n");
 	PRINT_LIST;
 
 	// FirstOrDefault
 	T value;
-	bool check;
+	bool_t check;
 	check = first_or_default(test, &value, selector(item, { return item > 10; }));
 	printf("\n\n>> First element > 10: ");
 	if (check == FALSE) printf("Error getting the item");
@@ -352,9 +352,9 @@ void LINQ_test()
 	printf("\n\n>> Index of the last even element < 0: %d", result);
 
 	// Where
-	List temp;
+	list_t temp;
 	temp = where(test, selector(item, { return !(item % 3) && item != 0; }));
-	printf("\n\n>> List of numbers divisible for 3 inside the List:\n");
+	printf("\n\n>> list_t of numbers divisible for 3 inside the list_t:\n");
 	PRINT_TEMP;
 	DISPOSE_TEMP;
 
@@ -378,8 +378,8 @@ void LINQ_test()
 	temp = create_random(4, 0, 10);
 	printf("\n\n>> Random list with 4 elements:\n");
 	formatted_print("%d", temp);
-	printf("\n\n>> Concat the two Lists:\n\n");
-	List two = concat(test, temp);
+	printf("\n\n>> Concat the two list_ts:\n\n");
+	list_t two = concat(test, temp);
 	formatted_print("%d", two);
 	destroy(&two);
 
@@ -391,17 +391,17 @@ void LINQ_test()
 
 	// Any
 	printf("\n\n>> Any item in the list that's > 10 && divisible for 3:\n");
-	bool boolResult = any(test, selector(item, { return item > 10 && !(item % 2); }));
-	PRINT_BOOL(boolResult);
+	bool_t bool_tResult = any(test, selector(item, { return item > 10 && !(item % 2); }));
+	PRINT_BOOL(bool_tResult);
 
 	// All
 	printf("\n\n>> All the elements have |value| > 2:\n");
-	boolResult = all(test, selector(item,
+	bool_tResult = all(test, selector(item,
 	{
 		if (item > 0) return item > 2;
 		return item < -2;
 	}));
-	PRINT_BOOL(boolResult);
+	PRINT_BOOL(bool_tResult);
 
 	// Skip
 	printf("\n\n>> Skip the first 6 elements:\n");
@@ -429,15 +429,15 @@ void LINQ_test()
 
 	// Join
 	temp = create_random(5, 0, 10);
-	printf("\n\n>> Created random List with 5 items:\n");
+	printf("\n\n>> Created random list_t with 5 items:\n");
 	PRINT_TEMP;
 	two = join(test, temp, equalityTester(item1, item2, { return item1 == item2; }));
-	printf("\n\n>> Join the two Lists:\n");
+	printf("\n\n>> Join the two list_ts:\n");
 	formatted_print("%d", two);
 	destroy(&two);
 
 	// JoinWhere
-	printf("\n\n>> Join the Lists only where |value| > 5:\n");
+	printf("\n\n>> Join the list_ts only where |value| > 5:\n");
 	two = join_where(test, temp, selector(item, 
 	{
 		if (item > 0) return item > 5;
@@ -447,24 +447,24 @@ void LINQ_test()
 	destroy(&two);
 
 	// Intersect
-	printf("\n\n>> Intersection between the Lists:\n");
+	printf("\n\n>> Intersection between the list_ts:\n");
 	two = intersect(test, temp, equalityTester(item1, item2, { return item1 == item2; }));
 	formatted_print("%d", two);
 	destroy(&two);
 
 	// Except
-	printf("\n\n>> List 1:\n");
+	printf("\n\n>> list_t 1:\n");
 	PRINT_LIST;
-	printf("\n\n>> List 2:\n");
+	printf("\n\n>> list_t 2:\n");
 	PRINT_TEMP;
-	printf("\n\n>> Subtraction between List 2 and List 1:\n");
+	printf("\n\n>> Subtraction between list_t 2 and list_t 1:\n");
 	two = except(temp, test, equalityTester(item1, item2, { return item1 == item2; }));
 	formatted_print("%d", two);
 	destroy(&two);
 	DISPOSE_TEMP;
 
 	// Reverse
-	printf("\n\n>> Reverse first List:\n");
+	printf("\n\n>> Reverse first list_t:\n");
 	temp = reverse(test);
 	PRINT_TEMP;
 	DISPOSE_TEMP;
@@ -477,7 +477,7 @@ void LINQ_test()
 
 	// Sum
 	result = sum(test, toNumber(item, { return item; }));
-	printf("\n\n>> List sum: %d", result);
+	printf("\n\n>> list_t sum: %d", result);
 
 	// Average
 	result = average(test, toNumber(item, { return item; }));
@@ -491,12 +491,12 @@ void LINQ_test()
 		else return EQUAL;
 	});
 	check = get_min(test, &value, expression);
-	printf("\n\n>> List min: ");
+	printf("\n\n>> list_t min: ");
 	PRINT_WITH_CHECK(check, value);
 
 	// Max
 	check = get_max(test, &value, expression);
-	printf("\n\n>> List max: ");
+	printf("\n\n>> list_t max: ");
 	PRINT_WITH_CHECK(check, value);
 
 	// InPlaceOrderBy
@@ -547,16 +547,16 @@ void LINQ_test()
 
 	// Derive
 	temp = derive(test, deriver(item, { return item % 2; }));
-	printf("\n\n>> Derive a new List where each item is the previous item mod 2:\n");
+	printf("\n\n>> Derive a new list_t where each item is the previous item mod 2:\n");
 	PRINT_TEMP;
 	
 	// SequenceEquals
-	printf("\n\n>> The new List is equal to the first one:\n");
-	boolResult = sequence_equals(test, temp, equalityTester(item1, item2, 
+	printf("\n\n>> The new list_t is equal to the first one:\n");
+	bool_tResult = sequence_equals(test, temp, equalityTester(item1, item2, 
 	{ 
 		return item1 == item2; 
 	}));
-	PRINT_BOOL(boolResult);
+	PRINT_BOOL(bool_tResult);
 	DISPOSE_TEMP;
 
 	// Trim
@@ -570,26 +570,26 @@ void LINQ_test()
 *  IteratorTest
 *  ---------------------------------------------------------------------
 *  Description:
-*    Shows all the functions that use a ListIterator.
+*    Shows all the functions that use a list_iterator_t.
 *  NOTE:
 *    None of these functions does SIDE EFFECT. */
 void iterator_test()
 {
 	printf("\n\n======== ITERATOR FUNCTIONS ========\n\n");
 
-	// Create random List
-	List test = create_random(10, -20, 30);
+	// Create random list_t
+	list_t test = create_random(10, -20, 30);
 	printf(">> Random list with 10 elements from -20 to 30:\n");
 	PRINT_LIST;
 
 	// GetIterator
-	ListIterator iterator = get_iterator(test);
+	list_iterator_t iterator = get_iterator(test);
 
 	// ActualPosition
 	printf("\n\n>> New iterator: position %d", actual_position(iterator));
 
 	// CanGoBack
-	bool result = can_go_back(iterator);
+	bool_t result = can_go_back(iterator);
 	printf("\n\n>> Can go back: ");
 	PRINT_BOOL(result);
 
@@ -599,7 +599,7 @@ void iterator_test()
 	// Next
 	printf("\n\n>> Next item: ");
 	T value;
-	bool check;
+	bool_t check;
 	check = next(iterator, &value);
 	PRINT_WITH_CHECK(check, value);
 
@@ -644,7 +644,7 @@ inline float get_time()
 void perform_benchmark(int len, comparation(*expression)(T, T))
 {
 	printf("\n\n>> Test with %d elements", len);
-	List test, sorted;
+	list_t test, sorted;
 	float totalIntro = 0, totalBubble = 0;
 	int i;
 	for (i = 0; i < 10; i++)
@@ -680,8 +680,8 @@ void sorting_benchmarks()
 {
 	printf("\n\n======== SORTING BENCHMARKS ========\n\n");
 
-	// Create random List
-	List test, sorted, compare;
+	// Create random list_t
+	list_t test, sorted, compare;
 
 	// Comparator used to call the sorting functions
 	comparation(*expression)(T, T) = comparator(item1, item2,
@@ -693,7 +693,7 @@ void sorting_benchmarks()
 
 	// Introsort basic test
 	printf(">> Testing");
-	bool valid, i;
+	bool_t valid, i;
 	for (i = 0; i < 10; i++)
 	{
 		test = create_random(1000, -500, 500);
